@@ -61,7 +61,7 @@ def delete_inventory_item(item_id):
         return jsonify({"error": str(e)}), 500
 
 #Route: Get Inventory by search
-@app.route("/inventory/search", methods=["GET"])
+@app.route("/products/search", methods=["GET"])
 def search_products():
     try:
         query = request.args.get("q")
@@ -80,7 +80,7 @@ def search_products():
 
 
 # Get product by barcode
-@app.route("/inventory/barcode/<barcode>", methods=["GET"])
+@app.route("/products/barcode/<barcode>", methods=["GET"])
 def get_by_barcode(barcode):
     try:
         product = get_product_by_barcode(barcode)
