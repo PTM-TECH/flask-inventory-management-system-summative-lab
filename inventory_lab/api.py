@@ -1,48 +1,81 @@
 import requests
 
-# Base endpoints for OpenFoodFacts API
+# OpenFoodFacts API endpoints
 BARCODE_URL = "https://world.openfoodfacts.org/api/v0/product/"
 SEARCH_URL = "https://world.openfoodfacts.org/cgi/search.pl"
 
-#function to fetch product details using a barcode
+# Required header
+HEADERS = {"User-Agent": "inventory-app/1.0 (test@example.com)"}
+
+
+# Function to fetch product details using barcode
 def get_product_by_barcode(barcode):
+    try:
+        url = f"{BARCODE_URL}{barcode}.json"
 
-    url = f"{BARCODE_URL}{barcode}.json"
-    response = requests.get(url)
-    if response.status_code != 200:
-        return None
-    data = response.json()
-    # If product does not exist
-    if data["status"] != 1:
-        return None
-    product = data["product"]
-    #extract only useful fields
-    return {
-        "name": product.get("product_name"),
-        "brand": product.get("brands"),
-        "ingredients": product.get("ingredients_text"),
-        "barcode": barcode
-    }
+        # Send GET request to API
+        response = requests.get(url, headers=HEADERS, timeout=5)
 
-#function to search products using a product name
-def search_product_by_name(product_name):
+        # If request fails, return None
+        if response.status_code != 200:
+            return None
 
-    params = {
-        "search_terms": product_name,
-        "search_simple": 1,
-        "action": "process",
-        "json": 1
-    }
-    response = requests.get(SEARCH_URL, params=params)
-    if response.status_code != 200:
-        return None
-    data = response.json()
-    results = []
+        data = response.json()
 
-    for product in data.get("products", [])[:5]:  # limit to first 5 results
-        results.append({
+        # If product not found in API
+        if data.get("status") != 1:
+            return None
+
+        # Extract product details
+        product = data.get("product", {})
+
+        # Return only useful fields
+        return {
             "name": product.get("product_name"),
             "brand": product.get("brands"),
-            "barcode": product.get("code")
-        })
-    return results
+            "ingredients": product.get("ingredients_text"),
+            "barcode": barcode
+        }
+
+    except requests.exceptions.RequestException:
+        # Handle network/API errors gracefully
+        return None
+    except Exception:
+        # Catch any unexpected error
+        return None
+
+
+# Function to search products by name
+def search_product_by_name(product_name):
+    try:
+        # Query parameters required by OpenFoodFacts
+        params = {
+            "search_terms": product_name,
+            "search_simple": 1,
+            "action": "process",
+            "json": 1
+        }
+        # Send request to the api
+        response = requests.get(SEARCH_URL, params=params, headers=HEADERS, timeout=5)
+
+        if response.status_code != 200:
+            return None
+
+        data = response.json()
+        results = []
+
+        # Loop through first 5 results only
+        for product in data.get("products", [])[:5]:
+            results.append({
+                "name": product.get("product_name"),
+                "brand": product.get("brands"),
+                "ingredients": product.get("ingredients_text"),
+                "barcode": product.get("code")
+            })
+
+        return results
+
+    except requests.exceptions.RequestException:
+        return None
+    except Exception:
+        return None
