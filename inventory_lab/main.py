@@ -2,6 +2,7 @@ import requests
 import threading
 import time
 from app import app
+from inventory import add_from_external_api
 
 # Base URL for the flask API
 BASE_URL = "http://127.0.0.1:5000"
@@ -85,16 +86,68 @@ def delete_item():
 #function to search for a product using barcode OR product name
 def search_product():
     try:
-        query = input("Enter barcode OR product name: ")
-
+        query = input("Enter barcode OR product name: ").strip()
         # If input is numeric, treat it as a barcode
         if query.isdigit():
             response = requests.get(f"{BASE_URL}/products/barcode/{query}")
-            print(response.json())
+            product = response.json()
+
+            if not product or product.get("error"):
+                print("Product not found")
+                return
+
+            print("\n Product found:")
+            print(product)
+
+            price = float(input("Enter price: "))
+            stock = int(input("Enter stock quantity: "))
+
+            # Save using clean helper
+            saved = add_from_external_api(product, price, stock)
+
+            # Send to Flask API
+            requests.post(BASE_URL, json=saved)
+
+            print("\nSaved to inventory:")
+            print(saved)
+        # treat it as a name search
         else:
-            # treat it as a name search
-            res = requests.get(f"{BASE_URL}/products/search?q={query}")
-            print(res.json())
+            response = requests.get(f"{BASE_URL}/products/search?q={query}")
+            results = response.json()
+
+            if not results:
+                print("No products found")
+                return
+
+            print("\nSearch results:")
+            for i, product in enumerate(results):
+                print(f"{i+1}. {product['name']} - {product['brand']}")
+
+            choice = int(input("\nSelect product number: ")) - 1
+            selected = results[choice]
+
+            print("\nSelected product:")
+            print(selected)
+
+            price = float(input("Enter price: "))
+            stock = int(input("Enter stock quantity: "))
+
+            # Prepare clean structure
+            product_data = {
+                "name": selected["name"],
+                "brand": selected["brand"],
+                "barcode": selected.get("barcode")
+            }
+
+            # Save using helper function
+            saved = add_from_external_api(product_data, price, stock)
+
+            # Send to Flask API
+            requests.post(BASE_URL, json=saved)
+
+            print("\nSaved to inventory:")
+            print(saved)
+
     except Exception as e:
         print("Error:", e)
 

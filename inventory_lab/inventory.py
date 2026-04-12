@@ -54,3 +54,21 @@ def delete_item(item_id):
             inventory.remove(item)
             return True
     return False
+
+def add_from_external_api(product_data, price, stock):
+    #Save external API product into inventory
+    global current_id
+
+    item = {
+        "id": current_id,
+        "name": product_data.get("name"),
+        "brand": product_data.get("brand"),
+        "price": price,
+        "stock": stock,
+        "barcode": product_data.get("barcode")
+    }
+
+    inventory.append(item)
+    current_id += 1
+
+    return item

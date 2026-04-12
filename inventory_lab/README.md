@@ -21,6 +21,7 @@ This is a Flask-based Inventory Management System that allows users to:
 # External API Integration
 - Search Products by name
 - Fetch product by barcode
+- Add fetched products to inventory
 
 # CLI Interface
 - Interactive menu system
@@ -92,6 +93,18 @@ Inventory Management
 5. Search Product
 6. Exit
 
+## Search by name sample
+- milk
+- nutella
+- coca cola
+- oreo
+- bread
+## Search by Barcode
+- 737628064502
+- 3017620422003
+- 5449000000996
+- 7622210449283
+- 7622300449283
 ## Running Tests
 Run all tests by:
     - pytest
