@@ -6,7 +6,7 @@ import main
 def test_menu_display(capsys):
     main.menu()
     captured = capsys.readouterr()
-    assert "INVENTORY MANAGEMENT SYSTEM" in captured.out
+    assert "Inventory Management" in captured.out
 
 #view inventory (mock requests)
 @patch("requests.get")
