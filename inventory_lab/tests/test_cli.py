@@ -1,11 +1,14 @@
 from unittest.mock import patch
 import main
 
+
+
 def test_menu_display(capsys):
     main.menu()
     captured = capsys.readouterr()
-    assert "Inventory Management" in captured.out
+    assert "INVENTORY MANAGEMENT SYSTEM" in captured.out
 
+#view inventory (mock requests)
 @patch("requests.get")
 def test_view_inventory(mock_get, capsys):
     mock_get.return_value.json.return_value = [
@@ -18,12 +21,11 @@ def test_view_inventory(mock_get, capsys):
             "barcode": "123"
         }
     ]
-
     main.view_inventory()
     captured = capsys.readouterr()
-
     assert "Milk" in captured.out
 
+#Delete an item
 @patch("requests.delete")
 @patch("builtins.input", side_effect=["1"])
 def test_delete_item(mock_input, mock_delete, capsys):
@@ -33,5 +35,4 @@ def test_delete_item(mock_input, mock_delete, capsys):
     }
     main.delete_item()
     captured = capsys.readouterr()
-
     assert "deleted" in captured.out.lower()

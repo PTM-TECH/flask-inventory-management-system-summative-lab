@@ -1,24 +1,25 @@
-from app import app
 import pytest
+from app import app
 from unittest.mock import patch
 
-#create test client
+# Create test client
 client = app.test_client()
 
-#reset state helpers for clean tests -> every run
+#reset state helpers
 @pytest.fixture(autouse=True)
 def reset_inventory():
     import inventory
     inventory.inventory.clear()
     inventory.current_id = 1
 
-#Get all items
+
+#get all items
 def test_get_inventory_empty():
     response = client.get("/inventory")
     assert response.status_code == 200
     assert response.get_json() == []
 
-#Create an item
+#create an item
 def test_create_item():
     response = client.post("/inventory", json={
         "name": "Milk",
@@ -32,7 +33,8 @@ def test_create_item():
     assert data["name"] == "Milk"
     assert data["id"] == 1
 
-#Get single item
+
+#get single item
 def test_get_single_item():
     client.post("/inventory", json={
         "name": "Bread",
@@ -41,11 +43,12 @@ def test_get_single_item():
         "stock": 5,
         "barcode": "222"
     })
+
     response = client.get("/inventory/1")
     assert response.status_code == 200
     assert response.get_json()["name"] == "Bread"
 
-#Update an item
+#update an item
 def test_update_item():
     client.post("/inventory", json={
         "name": "Sugar",
@@ -61,7 +64,7 @@ def test_update_item():
     assert response.status_code == 200
     assert data["price"] == 250
 
-#Delete an item
+#delete an item
 def test_delete_item():
     client.post("/inventory", json={
         "name": "Salt",
@@ -74,7 +77,7 @@ def test_delete_item():
     assert response.status_code == 200
     assert response.get_json()["message"] == "Item deleted"
 
-#Get non-existent item
+#non existent item
 def test_item_not_found():
     response = client.get("/inventory/999")
     assert response.status_code == 404
